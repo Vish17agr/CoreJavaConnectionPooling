@@ -6,13 +6,15 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Configuration {
 	
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getName());
-	
+	private static final Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass().getName());
+
+	private String dbName;
+
 	private String dbUserName;
 
 	private String dbPassword;
@@ -26,6 +28,13 @@ public class Configuration {
 	private Integer dbMaxIdle;
 
 	private Integer dbMinIdle;
+
+	public String getDB_NAME() {
+		return dbName;
+	}
+	public void setDB_NAME(String db_NAME) {
+		dbName = db_NAME;
+	}
 	
 	public String getDB_USER_NAME() {
 		return dbUserName;
@@ -110,39 +119,37 @@ public class Configuration {
 			try {
 				prop.load(getClass().getClassLoader().getResourceAsStream(propFileName));
 			} catch (IOException e) {
-				logger.error("Error occured while loading the configuration property file"+e.getMessage(),e);
+				logger.error("Error occured while loading the configuration property file "+e.getMessage(),e);
 			}
 		} catch (IOException e1) {
-			logger.error("Error occured while loading the configuration property file"+e1.getMessage(),e1);
+			logger.error("Error occured while loading the configuration property file "+e1.getMessage(),e1);
 		}
 		
 		try {
+			setDB_NAME(prop.getProperty("DB_NAME"));
 			setDB_USER_NAME(prop.getProperty("DB_USER"));
 			setDB_PASSWORD(prop.getProperty("DB_PWD"));
 			setDB_URL(prop.getProperty("DB_URL"));
-			setDB_DRIVER("oracle.jdbc.driver.OracleDriver");
+			setDB_DRIVER(prop.getProperty("DB_DRIVER"));
 			setDB_MAX_CONNECTIONS(getMaxConnectionLimit(prop.getProperty("DB_MAX_CONNECTIONS","5")));
 			setDbMaxIdle(getIntegerLimit(prop.getProperty("DB_MAX_IDLE","2")));
 			setDbMinIdle(getIntegerLimit(prop.getProperty("DB_MIN_IDLE","1")));
 		} catch (Exception e) {
-			logger.error("Exception in Configuration init method"+e.getMessage(),e);
+			logger.error("Exception in Configuration init method "+e.getMessage(),e);
 		}
 		
 	}
 	
 	public int getMaxConnectionLimit(String limit){
-		
 		try {
 			return Integer.parseInt(limit);
 		} catch (NumberFormatException e) {
 			logger.error("DB_MAX_CONNECTIONS property not passed properly, assigned default value as 5");
 			return 5;
 		}
-		
 	}
 	
 	public int getIntegerLimit(String limit){
-
 		try {
 			return Integer.parseInt(limit);
 		} catch (NumberFormatException e) {

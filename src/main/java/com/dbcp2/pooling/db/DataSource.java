@@ -17,6 +17,5 @@ public class DataSource {
 	
 	public static void checkDbcpPool() {
 		dbcp2Pool.checkPoolConnection();
-
 	}
 }

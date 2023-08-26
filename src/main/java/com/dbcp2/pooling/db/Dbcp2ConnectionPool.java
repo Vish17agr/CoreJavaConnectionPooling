@@ -18,14 +18,17 @@ import org.apache.commons.dbcp2.PoolableConnectionFactory;
 import org.apache.commons.dbcp2.PoolingDataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Dbcp2ConnectionPool {
 	
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getName());
+	private static final Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass().getName());
 
 	private GenericObjectPool<PoolableConnection> gPool = null;
+
+	private Configuration dbConfig = Configuration.getInstance();
 	
 	private DataSource dataSource;
 	
@@ -39,8 +42,7 @@ public class Dbcp2ConnectionPool {
 	}
 
 	public DataSource setUpPool() throws ClassNotFoundException {
-		
-		Configuration dbConfig = Configuration.getInstance();
+
 		Class.forName(dbConfig.getDB_DRIVER());
 
 		GenericObjectPoolConfig<PoolableConnection> config = new GenericObjectPoolConfig<>();
@@ -54,7 +56,7 @@ public class Dbcp2ConnectionPool {
 		connectionProps.put("create", "true");
 
 		/* 
-		 * Creates a ConnectionFactory Object Which Will Be Use by the Pool to create the Connection Object!
+		 * Creates a ConnectionFactory Object which will be used by the pool to create the Connection Object!
 		 */
 		ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
 				dbConfig.getDB_URL(), connectionProps);
@@ -108,14 +110,18 @@ public class Dbcp2ConnectionPool {
 		try(Connection connObj = dataSource.getConnection()) {
 
 			printDbStatus();
-			
-			String query = "select sysdate from dual";
+
+			String query = "";
+			if (dbConfig.getDB_NAME().equalsIgnoreCase("oracle"))
+				query = "select sysdate from dual";
+			else
+				query = "SELECT now()";
 
 			try(PreparedStatement pstmtObj = connObj.prepareStatement(query)){
 
 				try(ResultSet rsObj = pstmtObj.executeQuery()){
 					if (rsObj != null && rsObj.next()) {
-						logger.info("DB Sysdate: {}",rsObj.getDate("sysdate"));
+						logger.info("DB Sysdate: {}",rsObj.getString(1));
 					}
 				}
 			}

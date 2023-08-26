@@ -4,25 +4,25 @@ import java.lang.invoke.MethodHandles;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.dbcp2.pooling.db.DataSource;
 
 public class Execution {
 	
-	private static final Logger logger = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass().getName());
+	private static final Logger logger = LogManager.getLogger(MethodHandles.lookup().lookupClass().getName());
 	
-	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) {
 		
 		Connection dbConnection = null;
 		
 		try {
 			dbConnection = DataSource.getDbcpConnection();
 			DataSource.getDbcpPoolStatus();
-		} catch (Exception e){
+		} catch (Exception e) {
 			logger.error(e.getMessage(),e);
-		} finally{
+		} finally {
 			try {
 				if(dbConnection != null){
 					dbConnection.close();
